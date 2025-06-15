@@ -11,7 +11,7 @@ python-multipart==0.0.20
 Authlib==1.3.1
 itsdangerous==2.2.0
 pyjwt[crypto]==2.10.1
-
+httpx
 # PDF Handling
 PyMuPDF==1.26.1
 
