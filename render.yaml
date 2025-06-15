@@ -1,7 +1,7 @@
 services:
   # Single Web Service for Both Backend and Frontend
   - type: web
-    name: pitchine
+    name: pitchine-backend
     runtime: python
     buildCommand: |
       pip install -r requirements.txt
