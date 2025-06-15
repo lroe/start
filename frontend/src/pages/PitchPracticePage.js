@@ -358,45 +358,50 @@ function PitchPracticePage() {
         }
     }, [cleanupAudio, setAndTrackAppState]);
 
+        // ** ROBUST useEffect for WebSocket connection **
     useEffect(() => {
-        if (!currentUser) return;
+        if (!currentUser || socketRef.current) {
+            return; // Don't connect if no user or already connected
+        }
+
         let isMounted = true;
-        
-        async function connect() {
-            if (socketRef.current) return;
+        let localSocket = null;
+
+        const connect = async () => {
             setAndTrackAppState('disconnected');
             setStatusMessage('Connecting...');
             
             try {
                 const token = await currentUser.getIdToken(true);
-                const ws = new WebSocket(`${BACKEND_WS_URL}?token=${token}`);
-                socketRef.current = ws;
+                localSocket = new WebSocket(`${BACKEND_WS_URL}?token=${token}`);
+                socketRef.current = localSocket;
 
-                ws.onopen = () => {
+                localSocket.onopen = () => {
                     if (isMounted) {
                         setAndTrackAppState('ready_to_pitch');
                         setStatusMessage('Ready. Select a mode and start your practice.');
-                        ws.send(JSON.stringify({ type: "get_history" }));
+                        localSocket.send(JSON.stringify({ type: "get_history" }));
                     }
                 };
 
-                ws.onmessage = (event) => {
+                localSocket.onmessage = (event) => {
                     if (!isMounted) return;
                     const messageData = JSON.parse(event.data);
                     
+                    // The logic for handling messages remains the same
                     switch (messageData.type) {
                         case 'history_data': setHistoryData(messageData.data); break;
                         case 'analysis_report':
                             setReportData(messageData.data);
                             setAndTrackAppState('report_complete');
                             cleanupAudio();
-                            ws.send(JSON.stringify({ type: "get_history" }));
+                            localSocket.send(JSON.stringify({ type: "get_history" }));
                             break;
                         case 'session_terminated':
-                            setAndTrackAppState('session_ended');
-                            setStatusMessage(`SESSION ENDED: ${messageData.reason || "The investor has ended the meeting."}`);
-                            setTimeout(() => generateReport('investor_terminated'), 2500);
-                            break;
+                             setAndTrackAppState('session_ended');
+                             setStatusMessage(`SESSION ENDED: ${messageData.reason || "The investor has ended the meeting."}`);
+                             setTimeout(() => generateReport('investor_terminated'), 2500);
+                             break;
                         case 'user_interim_transcript':
                             if (appStateRef.current === 'processing_audio') {
                                 setUserTranscription(messageData.text);
@@ -405,16 +410,16 @@ function PitchPracticePage() {
                             }
                             break;
                         case 'investor':
-                            if (!['listening', 'processing'].includes(appStateRef.current)) return;
-                            setConversationLog(prev => [...prev, { role: messageData.investor_name, text: messageData.text }]);
-                            setSpeakingInvestor(messageData.investor_name);
-                            setTimeout(() => setSpeakingInvestor(null), 7000);
-                            userHasSpokenRef.current = false;
-                            if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-                            silenceTimerRef.current = null;
-                            setAndTrackAppState('listening');
-                            setStatusMessage('Listening for your response...');
-                            break;
+                             if (!['listening', 'processing'].includes(appStateRef.current)) return;
+                             setConversationLog(prev => [...prev, { role: messageData.investor_name, text: messageData.text }]);
+                             setSpeakingInvestor(messageData.investor_name);
+                             setTimeout(() => setSpeakingInvestor(null), 7000);
+                             userHasSpokenRef.current = false;
+                             if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+                             silenceTimerRef.current = null;
+                             setAndTrackAppState('listening');
+                             setStatusMessage('Listening for your response...');
+                             break;
                         case 'error':
                             setStatusMessage(`Error: ${messageData.text}`);
                             if (['processing', 'processing_audio'].includes(appStateRef.current)) {
@@ -424,16 +429,37 @@ function PitchPracticePage() {
                         default: break;
                     }
                 };
-                ws.onclose = () => { if (isMounted) { setStatusMessage('Disconnected. Please refresh.'); setAndTrackAppState('disconnected'); socketRef.current = null; } };
-                ws.onerror = (error) => { console.error("WebSocket Error:", error); if (isMounted) ws.close(); };
+                
+                localSocket.onclose = () => { 
+                    if (isMounted) {
+                        setStatusMessage('Disconnected. Refresh to reconnect.'); 
+                        setAndTrackAppState('disconnected');
+                        socketRef.current = null; 
+                    }
+                };
+                
+                localSocket.onerror = (error) => { 
+                    console.error("WebSocket Error:", error); 
+                    if (isMounted) localSocket.close(); 
+                };
+
             } catch (error) {
                 console.error("Auth token error for WebSocket:", error);
                 if (isMounted) setStatusMessage('Authentication error. Cannot connect.');
             }
-        }
+        };
+        
         connect();
-        return () => { isMounted = false; if (socketRef.current) { socketRef.current.close(); } cleanupAudio(); };
-    }, [currentUser, setAndTrackAppState, cleanupAudio, generateReport]);
+
+        return () => {
+            isMounted = false;
+            if (localSocket) {
+                localSocket.close();
+                socketRef.current = null;
+            }
+            cleanupAudio();
+        };
+    }, [currentUser, setAndTrackAppState, cleanupAudio, generateReport]); // Stable dependencies
     
     useEffect(() => {
         if (appState === 'listening' && pitchMode === 'strict') {
