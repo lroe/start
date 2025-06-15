@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../App.css'; // Use the main App.css file
 import { marked } from 'marked';
-
+const BACKEND_HTTP_URL = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8000';
 const StatusBadge = ({ status }) => {
   const statusClass = status ? status.toLowerCase() : '';
   return <span className={`status ${statusClass}`}>{status}</span>;
@@ -96,7 +96,7 @@ function DeckAnalyzerPage() {
         analysis: analysisResult 
       };
       
-      const response = await fetch('http://127.0.0.1:8000/api/chat', {
+      const response = await fetch(${BACKEND_HTTP_URL}/api/chat, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -127,7 +127,7 @@ function DeckAnalyzerPage() {
     const sendInitialChat = async () => {
         try {
             const payload = { history: newChatHistory, topic: topic, analysis: analysisResult };
-            const response = await fetch('http://127.0.0.1:8000/api/chat', {
+            const response = await fetch(${BACKEND_HTTP_URL}/api/chat, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -160,7 +160,7 @@ function DeckAnalyzerPage() {
     formData.append('pitchDeck', file);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/analyze', {
+      const response = await fetch(${BACKEND_HTTP_URL}/api/analyze, {
         method: 'POST',
         body: formData,
       });
