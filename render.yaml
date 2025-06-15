@@ -1,18 +1,14 @@
 services:
   # Single Web Service for Both Backend and Frontend
   - type: web
-    name: pitchine-backend # You can rename this to 'pitchine' if you prefer
+    name: pitchine
     runtime: python
-    rootDir: .
     buildCommand: |
       pip install -r requirements.txt
-      cd frontend
-      npm install
-      npm run build
+      cd frontend && npm install && npm run build
     startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.5
       - key: FRONTEND_URL
-        value: "https://pitchine.com" # Your custom domain
-      # We no longer need REACT_APP_BACKEND_URL because frontend and backend are on the same domain
+        value: "https://pitchine.com"
