@@ -49,7 +49,10 @@ app.add_middleware(SessionMiddleware, secret_key=os.environ.get('SESSION_SECRET_
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",  # For local development
+        "https://pitchine.com"      # Your production frontend
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
