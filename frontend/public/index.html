@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="AI-powered Pre-Seed Funding Kit"
+    />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.png" />
+    <link rel="manifest" href="manifest.json">
+    <title>Pre-Seed Funding Kit</title>
+    
+    <!-- === START: CORRECTED STYLES FOR BODY BACKGROUND === -->
+    <style>
+      body {
+        /* This path uses the PUBLIC_URL variable, which is the correct way */
+        background-image: url('%PUBLIC_URL%/new_kitty.png');
+        background-repeat: no-repeat;
+        background-position: bottom left;
+        background-attachment: fixed;
+        background-size: 380px;
+        padding-bottom: 6rem; /* Ensure space for the cat */
+      }
+
+      /* Responsive adjustment */
+      @media (max-width: 768px) {
+        body {
+            padding-bottom: 220px; 
+            background-size: 250px; 
+        }
+      }
+    </style>
+    <!-- === END: CORRECTED STYLES FOR BODY BACKGROUND === -->
+
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
