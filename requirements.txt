@@ -1,13 +1,28 @@
-aiofiles
-Authlib
+# Core FastAPI Framework
 fastapi
+uvicorn
+websockets
+
+# Authentication & Sessions
+Authlib
+itsdangerous
+pyjwt
+
+# Google / Firebase
 firebase-admin
 google-api-python-client
 google-cloud-speech
 google-cloud-firestore
 google-generativeai
-itsdangerous
-python-dotenv
+
+# PDF & File Handling
 PyMuPDF
-uvicorn
-websockets
+aiofiles
+
+# Utilities
+python-dotenv
+
+# Key Sub-dependencies (Explicitly listed for robustness)
+pydantic
+starlette
+httpx
