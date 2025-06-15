@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
 
     function signInWithGoogle() {
         // This redirects the user, so the backend handles the callback
-        window.location.href = 'https://pitch-vzva.onrender.com/login/google'; // Use your actual backend URL
+        window.location.href = '/login/google'; // Use your actual backend URL
     }
 
     function handleGoogleCallback() {
