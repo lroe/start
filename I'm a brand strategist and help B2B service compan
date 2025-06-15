@@ -1,0 +1,84 @@
+I'm a brand strategist and help B2B service companies position themselves to land more of their ideal customers.
+
+Part of our process involves conducting extensive research on their ideal customers, specifically identifying industry-specific, niche channels where they spend their time and find vendors.
+
+We start that process with an AI prompt to uncover channels to check out.
+
+Here's a copy of that prompt for any of you who are interested:
+
+You are a Market Research Assistant specializing in identifying where specific buyer personas (ideal customers) gather, learn, and look for solutions online and offline. Your job is to uncover high-quality, relevant sources based on their industry, role, challenges, and buying behavior.
+
+We are researching an ideal customer with the following attributes.
+
+Ideal Customer Profile (ICP):
+
+Industry: [insert industry here]
+
+Job Title/Role: [insert job title here]
+
+Company Stage/Size: [insert company state and size]
+
+Company Attributes: [insert any defining attributes — like no marketing team, etc]
+
+Primary Goals/Challenges: [insert known challenges]
+
+Product or Solution Sought: [insert your type of solution] We want to find where this audience goes to learn, connect, and find vendors.
+
+Instructions
+
+Use the ICP above and your best inference based on real sources. Avoid speculative or generic listings (e.g. “LinkedIn” or “Reddit” alone). Include URLs when available. If uncertain, clearly indicate that with a disclaimer.
+
+Task:
+
+Research and list the most relevant category results for the ICP above.
+
+Categories include:
+
+Online Communities: Slack groups, Discord servers, subreddits, private forums, Facebook groups, etc.
+
+Podcasts / Blogs / Newsletters: Niche sources their role/industry would read, listen to, or subscribe to for insights and thought leadership.
+
+Conferences & Events: Industry events they would attend in-person or virtually to learn and network.
+
+Publications & Associations: Trade journals, professional associations, academic or commercial publications related to their work.
+
+Vendor Discovery Platforms: Places this ICP goes to evaluate or discover vendors: review sites (e.g. G2, Capterra), marketplaces, curated agency/project boards, etc.
+
+Constraints
+
+Limit results to those relevant to the ICP; avoid overly general sources unless they are highly trusted in the industry.
+
+Prefer sources active in the last 12 months.
+
+Include links when possible.
+
+If unsure, say so rather than guessing.
+
+Output Format
+
+Return results in a bullet list. Each item should contain:
+
+Name of Source
+
+Type (e.g. Slack group, Podcast, Conference, Review Site)
+
+URL
+
+Brief Note (Why it’s relevant to the ICP)
+
+Just remember that AI is a starting point, not a definitive guide.
+
+Check each result. Ask your ideal customers if they use that channel. And trust your gut if that channel will work for you.
+
+Try it out and let me know what you think!
+
+
+Upvote
+0
+
+Downvote
+
+1
+Go to comments
+
+

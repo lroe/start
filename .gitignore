@@ -1,0 +1,25 @@
+
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
+*.egg-info/
+
+# Node
+frontend/node_modules/
+frontend/build/
+frontend/.pnp
+frontend/.pnp.js
+frontend/coverage/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# Service Account Keys - VERY IMPORTANT
+*.json
+
+# IDE / OS files
+.DS_Store
+.vscode/
