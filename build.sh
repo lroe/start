@@ -1,12 +1,25 @@
 #!/usr/bin/env bash
-# Exit on error
+# This script will exit immediately if any command fails, which is good for debugging.
 set -e
 
-# 1. Install Python Dependencies
+echo "--- Starting build process... ---"
+
+# 1. Install Python Dependencies in the root directory first.
+echo "--- Installing Python dependencies... ---"
 pip install -r requirements.txt
 
-# 2. Build Frontend
-# The $RENDER_SRC_ROOT variable is an absolute path to your project root
-cd $RENDER_SRC_ROOT/frontend
+# 2. Build the frontend.
+echo "--- Building frontend... ---"
+
+# This is the most important part.
+# We explicitly change directory to the 'frontend' folder before running npm.
+# This guarantees that 'npm install' finds the 'package.json'.
+cd frontend
+
+echo "--- Running 'npm install'... (Current directory: $(pwd)) ---"
 npm install
+
+echo "--- Running 'npm run build'... ---"
 npm run build
+
+echo "--- Build script finished successfully! ---"
