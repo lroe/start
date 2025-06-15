@@ -13,6 +13,7 @@ google-cloud-firestore
 google-cloud-speech
 google-cloud-storage
 google-generativeai
+itsdangerous
 pydantic
 python-dotenv
 PyMuPDF
