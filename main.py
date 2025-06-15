@@ -1062,21 +1062,20 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
         manager.disconnect(websocket)
         print("INFO:     connection closed")
 
+# ==============================================================================
+# === SERVE THE REACT FRONTEND (This must be AFTER all other API endpoints) ===
+# ==============================================================================
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
-# This line tells FastAPI to serve all static files (like CSS, JS, images)
-# from the 'frontend/build/static' directory.
+# This line serves all static files (like CSS, JS, images) from the React build.
+# The path "/static" corresponds to the <link> and <script> tags in the built index.html.
 app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
 
-# This is the catch-all route. If no other route matches,
-# it will serve the 'index.html' file from the React build.
+# This is the catch-all route. It will match any path that hasn't been matched by an API route.
+# This is what allows React Router to handle client-side routing (e.g., /practice, /analyze).
 @app.get("/{full_path:path}")
-async def serve_react_app(full_path: str, request: Request):
-    return RedirectResponse(url="/")
-
-@app.get("/")
-async def serve_react_index(request: Request):
-    from fastapi.responses import FileResponse
+async def serve_react_app(full_path: str):
     return FileResponse('frontend/build/index.html')
 def run_server():
     print("--- INTEGRATED SERVER READY FOR PRODUCTION ---")
