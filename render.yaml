@@ -11,10 +11,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.5 # Or your specific Python version
-      - key: REACT_APP_BACKEND_URL # For CORS
-        sync: false
-      - key: FRONTEND_URL # For Google OAuth
-        sync: false
+      - key: FRONTEND_URL
+        value: "https://pitchine.com"
 
   # ---------------------
   # Frontend Static Service
