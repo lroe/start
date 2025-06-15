@@ -659,9 +659,7 @@ async def get_current_user_uid(authorization: str = Header(None)):
 
 # --- Endpoints for Pitch Practice (Project 2) ---
 
-@app.get("/")
-def read_root():
-    return {"Status": "OK", "Message": "Backend is running"}
+
     
 @app.get('/login/google')
 async def login_via_google(request: Request):
