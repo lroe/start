@@ -14,7 +14,7 @@ This single FastAPI server powers the entire Pre-Seed Funding Kit.
 import fastapi
 import uvicorn
 from fastapi import WebSocket, WebSocketDisconnect, File, UploadFile, Request, Depends, HTTPException, status, Header
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,7 +37,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore, auth
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
-import fitz  # PyMuPDF - New import from Project 1
+import fitz  # PyMuPDF
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -47,11 +47,12 @@ app = fastapi.FastAPI()
 
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get('SESSION_SECRET_KEY', 'a_default_secret_key_for_dev'))
 
+# CORRECT CORS for production
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # For local development
-        "https://pitchine.com"      # Your production frontend
+        "http://localhost:3000",
+        "https://pitchine.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -61,10 +62,8 @@ app.add_middleware(
 # --- OAUTH2 SERVER-SIDE CONFIG ---
 config = Config()
 oauth = OAuth(config)
-
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
-
 if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
     oauth.register(
         name='google',
@@ -75,8 +74,7 @@ if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
     )
     print("Server-side Google OAuth configured.")
 else:
-    print("ERROR: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not found in environment. Server-side auth will fail.")
-
+    print("ERROR: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not found. OAuth will fail.")
 
 # --- FIREBASE ADMIN SDK INITIALIZATION ---
 fb_db = None
@@ -89,10 +87,9 @@ try:
         fb_db = firestore.client()
         print("Firebase Admin SDK initialized successfully.")
     else:
-        print(f"ERROR: Firebase service account key not found at {SERVICE_ACCOUNT_KEY_PATH}. Firestore integration will be disabled.")
+        print(f"ERROR: Firebase service account key not found at {SERVICE_ACCOUNT_KEY_PATH}.")
 except Exception as e:
     print(f"ERROR: Could not initialize Firebase Admin SDK: {e}")
-
 
 # --- GOOGLE CLOUD AUTHENTICATION & v2 CLIENT ---
 PROJECT_ID = None
@@ -105,21 +102,21 @@ try:
             data = json.load(f)
             PROJECT_ID = data.get('project_id')
         if not PROJECT_ID:
-            raise ValueError("Google Cloud Project ID could not be determined from the service account file.")
+            raise ValueError("Project ID not found in GCP key file.")
         speech_client_v2 = SpeechClient(client_options=ClientOptions(api_endpoint="us-central1-speech.googleapis.com"))
         print(f"Google Cloud Speech v2 client initialized for project: {PROJECT_ID}")
     else:
-        print(f"ERROR: GCP service account key not found at {SERVICE_ACCOUNT_FILE_GCP}. Speech-to-Text will be disabled.")
+        print(f"ERROR: GCP service account key not found at {SERVICE_ACCOUNT_FILE_GCP}.")
 except Exception as e:
     print(f"ERROR: Could not initialize Google Cloud Speech v2 client: {e}")
     speech_client_v2 = None
 
 # --- Gemini API Configuration & Models ---
 GEMINI_API_KEY = None
+gemini_pro_model = None
 moderation_model = None
 pitch_eval_model = None
 analysis_model = None
-gemini_pro_model = None # General purpose, also for moderator & deck analysis
 try:
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
     if GEMINI_API_KEY:
@@ -128,11 +125,11 @@ try:
         moderation_model = genai.GenerativeModel("gemini-1.5-pro-latest")
         pitch_eval_model = genai.GenerativeModel("gemini-1.5-pro-latest")
         analysis_model = genai.GenerativeModel("gemini-1.5-pro-latest")
-        print("Gemini API key loaded from environment variable. All models initialized.")
+        print("Gemini API key loaded. All models initialized.")
     else:
-        print("ERROR: GEMINI_API_KEY not found in environment variables. Gemini models will not be available.")
+        print("ERROR: GEMINI_API_KEY not found. Gemini models will be unavailable.")
 except Exception as e:
-    print(f"ERROR: Could not get Gemini API key from environment or initialize models: {e}")
+    print(f"ERROR: Could not initialize Gemini models: {e}")
 
 # --- Storage Setup ---
 STORAGE_DIR = "pitch_history"
@@ -386,28 +383,6 @@ def get_history_from_firestore(user_uid):
         print(f"Error reading history from Firestore: {e}")
         return []
 
-def save_session_to_local_file(user_identifier, report_data):
-    if not user_identifier: return
-    filename = "".join(c for c in user_identifier if c.isalnum() or c in ('_','-')).rstrip()
-    filepath = os.path.join(STORAGE_DIR, f"{filename}.jsonl")
-    try:
-        session_record = {"timestamp": datetime.now().isoformat(), "report": report_data}
-        with open(filepath, 'a') as f: f.write(json.dumps(session_record) + '\n')
-    except Exception as e: print(f"Error saving session to local file: {e}")
-
-def get_history_from_local_file(user_identifier):
-    if not user_identifier: return []
-    filename = "".join(c for c in user_identifier if c.isalnum() or c in ('_','-')).rstrip()
-    filepath = os.path.join(STORAGE_DIR, f"{filename}.jsonl")
-    if not os.path.exists(filepath): return []
-    try:
-        user_history = []
-        with open(filepath, 'r') as f:
-            for line in f:
-                if line.strip(): user_history.append(json.loads(line))
-        return user_history
-    except Exception as e: return []
-
 class ConnectionManager:
     def __init__(self):
         self.active_connections: dict[WebSocket, dict] = {}
@@ -655,11 +630,6 @@ async def get_current_user_uid(authorization: str = Header(None)):
     if not uid:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
     return uid
-
-
-# --- Endpoints for Pitch Practice (Project 2) ---
-
-
     
 @app.get('/login/google')
 async def login_via_google(request: Request):
@@ -753,7 +723,6 @@ async def analyze_pitch_deck_endpoint(pitchDeck: UploadFile = File(...)):
         initial_chat_message = generate_initial_chat_message(analysis_result)
         analysis_result['initialChatMessage'] = initial_chat_message
         
-        # --- NEW: Return the extracted deck text ---
         analysis_result['deckText'] = deck_text
         
         return analysis_result
@@ -779,7 +748,6 @@ class StartupProfileCreate(BaseModel):
     name: str = Field(..., min_length=1)
     pitch: str = Field(..., min_length=1)
     problem: str = Field(..., min_length=1)
-    # NEW: Add deckText to the profile
     deckText: Optional[str] = None
 
 class StartupProfileUpdate(BaseModel):
@@ -913,7 +881,6 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                         response = await run_in_threadpool(chat_session.send_message, final_prompt)
                         conn_data['last_investor_name'] = investor_name 
                         
-                        # Add investor opening to the unified history
                         conn_data['conversation_history'].append({'role': investor_name, 'content': response.text.strip()})
                         
                         await websocket.send_json({"type": "investor", "investor_name": investor_name, "text": response.text.strip()})
@@ -923,8 +890,6 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                     if not composed_text:
                         composed_text = "[Silent Response]"
                     
-                    # *** FIX: Unified history management ***
-                    # The backend now is the single source of truth for conversation history.
                     conn_data['conversation_history'].append({'role': 'You', 'content': composed_text})
 
                     is_safe, reason = await check_for_inappropriate_content(composed_text, moderation_model)
@@ -936,7 +901,6 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                         conn_data['opening_evaluated'] = True
                         decision, reason = await evaluate_pitch_opening(composed_text, pitch_eval_model)
                         if decision == 'TERMINATE':
-                            # The termination reason is the investor's direct feedback.
                             final_text_to_send = "I don't understand what you do. If you can't explain it clearly, there's no point in continuing. Meeting's over."
                             conn_data['conversation_history'].append({'role': 'Alex Chen', 'content': f"[TERMINATE_SESSION] {final_text_to_send}"})
                             await websocket.send_json({"type": "session_terminated", "reason": final_text_to_send})
@@ -977,7 +941,6 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                     current_mode = conn_data.get("mode", "unknown")
                     startup_details_for_report = conn_data.get("startup_details", {})
                     
-                    # *** FIX: Use the backend's unified, accurate history for analysis ***
                     history_for_analysis = conn_data.get("conversation_history", [])
                     
                     end_reason = message.get("reason", "Founder ended session.")
@@ -990,7 +953,6 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                         "timestamp": None, 
                         "mode": current_mode, 
                         "startup_details": startup_details_for_report, 
-                        # The replay transcript sent to frontend can use 'text' for consistency there.
                         "replay_data": {"audio_path": audio_path, "transcript": [{'role': h['role'], 'text': h['content']} for h in history_for_analysis]},
                         "end_reason": end_reason
                     }
@@ -1006,10 +968,6 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                     
                     if session_user_uid and fb_db:
                         save_session_to_firestore(session_user_uid, client_session_id, report_data_to_save)
-                    else:
-                        user_identifier_from_message = message.get("identifier", "unknown_user_local")
-                        report_data_to_save["timestamp"] = datetime.now().isoformat()
-                        save_session_to_local_file(user_identifier_from_message, report_data_to_save)
 
                 elif msg_type == "get_history":
                     history_user_uid = conn_data.get("user_uid")
@@ -1029,7 +987,6 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                 request_v2 = cloud_speech.RecognizeRequest(recognizer=recognizer_path, config=request_config, content=audio_bytes)
                 
                 try:
-                    # FIX: Added a 15-second timeout to prevent the server from hanging on network issues.
                     response_v2 = await asyncio.wait_for(
                         run_in_threadpool(speech_client_v2.recognize, request=request_v2),
                         timeout=15.0
@@ -1042,13 +999,10 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                 except asyncio.TimeoutError:
                     print("ERROR: Google Cloud Speech-to-Text API call timed out.")
                     transcribed_text = "[Transcription timed out due to a network issue on the server.]"
-
                 except Exception as e:
                     print(f"ERROR: Google Cloud Speech-to-Text API failed! Details: {e}")
-                    # By setting the text here, we keep the UI flow moving instead of just erroring out.
                     transcribed_text = "[Transcription failed on server. Please try again.]"
                 
-                # This message is now always sent, un-sticking the frontend UI.
                 await websocket.send_json({"type": "user_interim_transcript", "text": transcribed_text})
 
     except (WebSocketDisconnect, RuntimeError) as e:
@@ -1062,25 +1016,23 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
         manager.disconnect(websocket)
         print("INFO:     connection closed")
 
-# ==============================================================================
-# === SERVE THE REACT FRONTEND (This must be AFTER all other API endpoints) ===
-# ==============================================================================
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 
-# This line serves all static files (like CSS, JS, images) from the React build.
-# The path "/static" corresponds to the <link> and <script> tags in the built index.html.
+# ==============================================================================
+# === SERVE THE REACT FRONTEND (This must be the LAST routing block) ===
+# ==============================================================================
+
+# This mounts the 'static' folder from the React build output.
+# The path "/static" is what the built index.html file uses for its <script> and <link> tags.
 app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
 
 # This is the catch-all route. It will match any path that hasn't been matched by an API route.
-# This is what allows React Router to handle client-side routing (e.g., /practice, /analyze).
+# This is crucial for React Router to handle client-side routing (e.g., /practice, /analyze).
 @app.get("/{full_path:path}")
 async def serve_react_app(full_path: str):
     return FileResponse('frontend/build/index.html')
-def run_server():
-    print("--- INTEGRATED SERVER READY FOR PRODUCTION ---")
-    print("This server now handles both the Deck Analyzer and Live Pitch Practice.")
-    print("To run locally: uvicorn main:app --reload --port 8000")
+
+# ==============================================================================
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
