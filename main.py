@@ -1064,7 +1064,22 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
         manager.disconnect(websocket)
         print("INFO:     connection closed")
 
+from fastapi.staticfiles import StaticFiles
 
+# This line tells FastAPI to serve all static files (like CSS, JS, images)
+# from the 'frontend/build/static' directory.
+app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
+
+# This is the catch-all route. If no other route matches,
+# it will serve the 'index.html' file from the React build.
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str, request: Request):
+    return RedirectResponse(url="/")
+
+@app.get("/")
+async def serve_react_index(request: Request):
+    from fastapi.responses import FileResponse
+    return FileResponse('frontend/build/index.html')
 def run_server():
     print("--- INTEGRATED SERVER READY FOR PRODUCTION ---")
     print("This server now handles both the Deck Analyzer and Live Pitch Practice.")
