@@ -96,7 +96,7 @@ function DeckAnalyzerPage() {
         analysis: analysisResult 
       };
       
-      const response = await fetch(${BACKEND_HTTP_URL}/api/chat, {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -127,7 +127,7 @@ function DeckAnalyzerPage() {
     const sendInitialChat = async () => {
         try {
             const payload = { history: newChatHistory, topic: topic, analysis: analysisResult };
-            const response = await fetch(${BACKEND_HTTP_URL}/api/chat, {
+            const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -160,7 +160,7 @@ function DeckAnalyzerPage() {
     formData.append('pitchDeck', file);
 
     try {
-      const response = await fetch(${BACKEND_HTTP_URL}/api/analyze, {
+      const response = await fetch('/api/analyze', {
         method: 'POST',
         body: formData,
       });
