@@ -5,11 +5,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../App.css'; // Use the main App.css file
 
-// This URL will be 'http://localhost:8000' locally and your production URL when deployed
-const BACKEND_HTTP_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+
 
 // This converts the HTTP URL to a WebSocket URL (http -> ws, https -> wss)
-const BACKEND_WS_URL = BACKEND_HTTP_URL.replace(/^http/, 'ws') + "/ws";
+
 const PITCH_DURATION_SECONDS = 120;
 
 // ############################################################################
@@ -373,7 +372,9 @@ function PitchPracticePage() {
             
             try {
                 const token = await currentUser.getIdToken(true);
-                localSocket = new WebSocket(`${BACKEND_WS_URL}?token=${token}`);
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${wsProtocol}//${window.location.host}/ws?token=${token}`;
+                localSocket = new WebSocket(wsUrl);
                 socketRef.current = localSocket;
 
                 localSocket.onopen = () => {
