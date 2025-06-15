@@ -5,8 +5,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../App.css'; // Use the main App.css file
 
-// Backend WebSocket URL
-const BACKEND_WS_URL = "ws://localhost:8000/ws";
+// This URL will be 'http://localhost:8000' locally and your production URL when deployed
+const BACKEND_HTTP_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+
+// This converts the HTTP URL to a WebSocket URL (http -> ws, https -> wss)
+const BACKEND_WS_URL = BACKEND_HTTP_URL.replace(/^http/, 'ws') + "/ws";
 const PITCH_DURATION_SECONDS = 120;
 
 // ############################################################################
