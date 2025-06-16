@@ -1,5 +1,5 @@
 // File: frontend/src/pages/PitchPracticePage.js
-
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -372,8 +372,9 @@ function PitchPracticePage() {
             
             try {
                 const token = await currentUser.getIdToken(true);
-                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const wsUrl = `${wsProtocol}//${window.location.host}/ws?token=${token}`;
+                const wsProtocol = BACKEND_URL.startsWith('https') ? 'wss:' : 'ws:';
+                const wsHost = BACKEND_URL.replace(/^https?:\/\//, '');
+                const wsUrl = `${wsProtocol}//${wsHost}/ws?token=${token}`;
                 localSocket = new WebSocket(wsUrl);
                 socketRef.current = localSocket;
 
