@@ -1,6 +1,6 @@
 
 // File: frontend/src/contexts/AuthContext.js
-
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 import React, { useContext, useState, useEffect, createContext } from 'react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -59,7 +59,7 @@ export function AuthProvider({ children }) {
 
     function signInWithGoogle() {
         // This redirects the user, so the backend handles the callback
-        window.location.href = '/login/google'; // Use your actual backend URL
+        window.location.href = `${BACKEND_URL}/login/google`;
     }
 
     function handleGoogleCallback() {
