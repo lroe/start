@@ -1017,21 +1017,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
         print("INFO:     connection closed")
 
 
-# ==============================================================================
-# === SERVE THE REACT FRONTEND (This must be the LAST routing block) ===
-# ==============================================================================
 
-# This mounts the 'static' folder from the React build output.
-# The path "/static" is what the built index.html file uses for its <script> and <link> tags.
-app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
-
-# This is the catch-all route. It will match any path that hasn't been matched by an API route.
-# This is crucial for React Router to handle client-side routing (e.g., /practice, /analyze).
-@app.get("/{full_path:path}")
-async def serve_react_app(full_path: str):
-    return FileResponse('frontend/build/index.html')
-
-# ==============================================================================
 
 
 if __name__ == "__main__":
