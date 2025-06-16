@@ -1,4 +1,4 @@
-# Core FastAPI Framework
+# Core FastAPI Framework.
 fastapi==0.115.12
 uvicorn[standard]==0.34.2
 websockets==15.0.1
