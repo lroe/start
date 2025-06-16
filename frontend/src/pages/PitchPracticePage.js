@@ -1,5 +1,5 @@
 // File: frontend/src/pages/PitchPracticePage.js
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -10,7 +10,7 @@ import '../App.css'; // Use the main App.css file
 // This converts the HTTP URL to a WebSocket URL (http -> ws, https -> wss)
 
 const PITCH_DURATION_SECONDS = 120;
-
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 // ############################################################################
 // ## UI SUB-COMPONENTS (Themed)
 // ############################################################################
