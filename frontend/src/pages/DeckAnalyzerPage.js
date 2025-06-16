@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import '../App.css'; // Use the main App.css file
 import { marked } from 'marked';
 const BACKEND_HTTP_URL = process.env.REACT_APP_BACKEND_URL || 'http://127.0.0.1:8000';
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+
 const StatusBadge = ({ status }) => {
   const statusClass = status ? status.toLowerCase() : '';
   return <span className={`status ${statusClass}`}>{status}</span>;
@@ -66,6 +66,7 @@ const ChatWidget = ({ messages, onSendMessage, topic, onClose }) => {
 };
 
 function DeckAnalyzerPage() {
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
   const [file, setFile] = useState(null);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
