@@ -1,6 +1,6 @@
 
 // File: frontend/src/contexts/AuthContext.js
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+
 import React, { useContext, useState, useEffect, createContext } from 'react';
 import { initializeApp } from 'firebase/app';
 import { 
@@ -13,7 +13,7 @@ import {
 } from 'firebase/auth';
 // You don't need firestore here unless you're fetching user profiles directly in the context
 // import { getFirestore } from 'firebase/firestore'; 
-
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 // --- Your Firebase Configuration ---
 // It's better to put these in a .env file for security, but this works.
 const firebaseConfig = {
