@@ -1,5 +1,5 @@
 // File: frontend/src/pages/DeckAnalyzerPage.js
-
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
 import React, { useState, useEffect, useRef } from 'react';
 import '../App.css'; // Use the main App.css file
 import { marked } from 'marked';
@@ -96,7 +96,7 @@ function DeckAnalyzerPage() {
         analysis: analysisResult 
       };
       
-      const response = await fetch('/api/chat', {
+      const response = await fetch(`${BACKEND_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -127,7 +127,7 @@ function DeckAnalyzerPage() {
     const sendInitialChat = async () => {
         try {
             const payload = { history: newChatHistory, topic: topic, analysis: analysisResult };
-            const response = await fetch('/api/chat', {
+            const response = await fetch(`${BACKEND_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -160,7 +160,7 @@ function DeckAnalyzerPage() {
     formData.append('pitchDeck', file);
 
     try {
-      const response = await fetch('/api/analyze', {
+      const response = await fetch(`${BACKEND_URL}/api/analyze`, {
         method: 'POST',
         body: formData,
       });
